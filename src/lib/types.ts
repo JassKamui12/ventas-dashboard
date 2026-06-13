@@ -6,6 +6,9 @@ export interface Business {
   logoUrl: string | null
   whatsappNumber: string | null
   facebookPageId: string | null
+  whatsappChannel: 'META' | 'BAILEYS'
+  phoneNumberId: string | null
+  whatsappToken: string | null
   paymentMethods: string[]
   isActive: boolean
   onboardingStep: number

@@ -6,7 +6,7 @@ import { clearToken } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import {
   ShoppingBag, LayoutDashboard, Package, ClipboardList,
-  Share2, Settings, LogOut, Menu, X, Zap
+  Share2, Settings, LogOut, Menu, X, Zap, BookOpen
 } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -17,6 +17,7 @@ const nav = [
   { href: '/dashboard/orders', label: 'Órdenes', icon: ClipboardList },
   { href: '/dashboard/channels', label: 'Canales', icon: Share2 },
   { href: '/dashboard/settings', label: 'Configuración', icon: Settings },
+  { href: '/dashboard/help', label: 'Ayuda', icon: BookOpen },
 ]
 
 export function Sidebar({ businessName }: { businessName?: string }) {
