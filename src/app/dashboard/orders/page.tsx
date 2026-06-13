@@ -3,10 +3,9 @@
 import { useEffect, useState } from 'react'
 import { api } from '@/lib/api'
 import { Order } from '@/lib/types'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Loader2, ChevronDown } from 'lucide-react'
+import { Loader2, ChevronDown, ClipboardList } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 const statuses = ['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'DELIVERED', 'CANCELLED'] as const
 type Status = typeof statuses[number]
@@ -20,14 +19,26 @@ const statusLabel: Record<Status, string> = {
   CANCELLED: 'Cancelado',
 }
 
-const statusColor: Record<Status, string> = {
-  PENDING: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  CONFIRMED: 'bg-blue-100 text-blue-700 border-blue-200',
-  PREPARING: 'bg-orange-100 text-orange-700 border-orange-200',
-  READY: 'bg-green-100 text-green-700 border-green-200',
-  DELIVERED: 'bg-gray-100 text-gray-600 border-gray-200',
-  CANCELLED: 'bg-red-100 text-red-600 border-red-200',
+const statusLabelShort: Record<Status, string> = {
+  PENDING: 'Pendiente',
+  CONFIRMED: 'Confirmado',
+  PREPARING: 'Preparando',
+  READY: 'Listo',
+  DELIVERED: 'Entregado',
+  CANCELLED: 'Cancelado',
 }
+
+const statusPill: Record<Status, string> = {
+  PENDING: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
+  CONFIRMED: 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200',
+  PREPARING: 'bg-orange-50 text-orange-700 ring-1 ring-orange-200',
+  READY: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
+  DELIVERED: 'bg-slate-100 text-slate-600 ring-1 ring-slate-200',
+  CANCELLED: 'bg-rose-50 text-rose-600 ring-1 ring-rose-200',
+}
+
+const filterTabActive = 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200'
+const filterTabInactive = 'text-slate-500 hover:text-slate-700'
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
@@ -58,101 +69,135 @@ export default function OrdersPage() {
   const visible = filter === 'ALL' ? orders : orders.filter(o => o.status === filter)
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-violet-600" /></div>
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+      </div>
+    )
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Órdenes</h1>
-          <p className="text-sm text-gray-500 mt-1">{visible.length} órdenes</p>
-        </div>
-        <Select value={filter} onValueChange={v => setFilter(v as Status | 'ALL')}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Filtrar por estado" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">Todas</SelectItem>
-            {statuses.map(s => (
-              <SelectItem key={s} value={s}>{statusLabel[s]}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      {/* Header */}
+      <div>
+        <h1 className="text-xl font-bold text-slate-900">Órdenes</h1>
+        <p className="text-sm text-slate-500 mt-0.5">{visible.length} órdenes</p>
       </div>
 
+      {/* Pill filter tabs */}
+      <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-1 flex-wrap">
+        <button
+          onClick={() => setFilter('ALL')}
+          className={cn(
+            'px-3 py-1.5 text-xs font-medium rounded-md transition-all',
+            filter === 'ALL' ? filterTabActive : filterTabInactive
+          )}
+        >
+          Todas
+          <span className="ml-1.5 text-xs text-slate-400">{orders.length}</span>
+        </button>
+        {statuses.map(s => {
+          const count = orders.filter(o => o.status === s).length
+          if (count === 0) return null
+          return (
+            <button
+              key={s}
+              onClick={() => setFilter(s)}
+              className={cn(
+                'px-3 py-1.5 text-xs font-medium rounded-md transition-all',
+                filter === s ? filterTabActive : filterTabInactive
+              )}
+            >
+              {statusLabelShort[s]}
+              <span className="ml-1.5 text-xs text-slate-400">{count}</span>
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Orders list */}
       {visible.length === 0 ? (
-        <Card>
-          <CardContent className="flex items-center justify-center py-16">
-            <p className="text-gray-400">No hay órdenes en esta categoría</p>
-          </CardContent>
-        </Card>
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm flex flex-col items-center justify-center py-16 text-center px-6">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 mb-3">
+            <ClipboardList className="h-5 w-5 text-slate-400" />
+          </div>
+          <p className="text-sm font-medium text-slate-600">Sin órdenes en esta categoría</p>
+        </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {visible.map(order => (
-            <Card key={order.id} className="overflow-hidden">
+            <div key={order.id} className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+              {/* Row header */}
               <div
-                className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50"
+                className="flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-slate-50/70 transition-colors"
                 onClick={() => setExpanded(expanded === order.id ? null : order.id)}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <ChevronDown
-                    className={`h-4 w-4 text-gray-400 flex-shrink-0 transition-transform ${expanded === order.id ? 'rotate-180' : ''}`}
+                    className={cn(
+                      'h-4 w-4 text-slate-400 flex-shrink-0 transition-transform duration-200',
+                      expanded === order.id && 'rotate-180'
+                    )}
                   />
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 truncate">
+                    <p className="text-sm font-semibold text-slate-900 truncate">
                       {order.customerName || order.customerPhone}
                     </p>
-                    <p className="text-xs text-gray-400">{new Date(order.createdAt).toLocaleString('es-HN')}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {new Date(order.createdAt).toLocaleString('es-HN')}
+                    </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 flex-shrink-0">
-                  <span className={`hidden sm:inline-flex text-xs font-medium px-2 py-1 rounded-full border ${statusColor[order.status]}`}>
-                    {statusLabel[order.status]}
+                <div className="flex items-center gap-4 flex-shrink-0">
+                  <span className={`hidden sm:inline-flex text-xs font-medium px-2.5 py-1 rounded-full ${statusPill[order.status]}`}>
+                    {statusLabelShort[order.status]}
                   </span>
-                  <p className="text-sm font-bold text-gray-900">
+                  <p className="text-sm font-bold text-slate-900 tabular-nums">
                     L {order.total.toLocaleString('es-HN', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
               </div>
 
+              {/* Expanded detail */}
               {expanded === order.id && (
-                <div className="border-t border-gray-100 px-4 py-3 space-y-4 bg-gray-50">
+                <div className="border-t border-slate-100 px-5 py-4 space-y-5 bg-slate-50/50">
                   {/* Items */}
                   <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Productos</p>
-                    <div className="space-y-1">
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Productos</p>
+                    <div className="space-y-1.5">
                       {order.items.map(item => (
                         <div key={item.id} className="flex justify-between text-sm">
-                          <span className="text-gray-700">{item.quantity}x {item.product.name}</span>
-                          <span className="text-gray-900 font-medium">L {item.total.toLocaleString('es-HN', { minimumFractionDigits: 2 })}</span>
+                          <span className="text-slate-700">{item.quantity}x {item.product.name}</span>
+                          <span className="text-slate-900 font-medium tabular-nums">
+                            L {item.total.toLocaleString('es-HN', { minimumFractionDigits: 2 })}
+                          </span>
                         </div>
                       ))}
                     </div>
                   </div>
 
                   {/* Contact */}
-                  <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <p className="text-xs text-gray-500">Teléfono</p>
-                      <p className="font-medium">{order.customerPhone}</p>
+                      <p className="text-xs text-slate-400 mb-0.5">Teléfono</p>
+                      <p className="font-medium text-slate-800">{order.customerPhone}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500">Pago</p>
-                      <p className="font-medium capitalize">{order.paymentMethod}</p>
+                      <p className="text-xs text-slate-400 mb-0.5">Pago</p>
+                      <p className="font-medium text-slate-800 capitalize">{order.paymentMethod}</p>
                     </div>
                   </div>
 
                   {order.notes && (
                     <div>
-                      <p className="text-xs text-gray-500">Notas</p>
-                      <p className="text-sm text-gray-700">{order.notes}</p>
+                      <p className="text-xs text-slate-400 mb-0.5">Notas</p>
+                      <p className="text-sm text-slate-700">{order.notes}</p>
                     </div>
                   )}
 
                   {/* Status update */}
                   <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Cambiar estado</p>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Cambiar estado</p>
                     <div className="flex flex-wrap gap-2">
                       {statuses.filter(s => s !== order.status && s !== 'PENDING').map(s => (
                         <Button
@@ -161,7 +206,7 @@ export default function OrdersPage() {
                           variant="outline"
                           disabled={updatingId === order.id}
                           onClick={() => updateStatus(order.id, s)}
-                          className="text-xs h-7"
+                          className="text-xs h-7 border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-700 hover:bg-indigo-50"
                         >
                           {updatingId === order.id ? <Loader2 className="h-3 w-3 animate-spin" /> : statusLabel[s]}
                         </Button>
@@ -170,7 +215,7 @@ export default function OrdersPage() {
                   </div>
                 </div>
               )}
-            </Card>
+            </div>
           ))}
         </div>
       )}

@@ -21,17 +21,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-slate-50">
       <Sidebar businessName={business?.name} />
-      <main className="flex-1 md:ml-56 pt-14 md:pt-0">
-        <div className="p-6">{children}</div>
+      <main className="flex-1 md:ml-64 pt-14 md:pt-0">
+        <div className="p-6 lg:p-8">{children}</div>
       </main>
     </div>
   )

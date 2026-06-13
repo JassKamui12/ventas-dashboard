@@ -3,11 +3,10 @@
 import { useEffect, useState } from 'react'
 import { api } from '@/lib/api'
 import { Business } from '@/lib/types'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Loader2 } from 'lucide-react'
+import { Loader2, CheckCircle2 } from 'lucide-react'
 
 export default function SettingsPage() {
   const [business, setBusiness] = useState<Business | null>(null)
@@ -39,46 +38,86 @@ export default function SettingsPage() {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-violet-600" /></div>
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+      </div>
+    )
   }
+
+  const hasChanges = name.trim() !== '' && name !== business?.name
 
   return (
     <div className="space-y-6 max-w-2xl">
+      {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Configuración</h1>
-        <p className="text-sm text-gray-500 mt-1">Información de tu negocio</p>
+        <h1 className="text-xl font-bold text-slate-900">Configuración</h1>
+        <p className="text-sm text-slate-500 mt-0.5">Información de tu negocio</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Datos del negocio</CardTitle>
-          <CardDescription>Nombre e información visible para tus clientes</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Nombre del negocio</Label>
-            <Input value={name} onChange={e => setName(e.target.value)} />
+      {/* Business data card */}
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm">
+        <div className="px-6 py-4 border-b border-slate-100">
+          <h2 className="text-sm font-semibold text-slate-900">Datos del negocio</h2>
+          <p className="text-xs text-slate-500 mt-0.5">Nombre e información visible para tus clientes</p>
+        </div>
+        <div className="px-6 py-5 space-y-4">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium text-slate-700">Nombre del negocio</Label>
+            <Input
+              value={name}
+              onChange={e => setName(e.target.value)}
+              className="border-slate-200 focus-visible:ring-indigo-500"
+            />
           </div>
-          <div className="space-y-2">
-            <Label>Email</Label>
-            <Input value={business?.email ?? ''} readOnly className="bg-gray-50 text-gray-500" />
+
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium text-slate-700">Email</Label>
+            <Input
+              value={business?.email ?? ''}
+              readOnly
+              className="bg-slate-50 border-slate-200 text-slate-500 cursor-default"
+            />
           </div>
-          <div className="space-y-2">
-            <Label>Slug (URL pública del catálogo)</Label>
-            <Input value={business?.slug ?? ''} readOnly className="bg-gray-50 font-mono text-sm text-gray-500" />
-            <p className="text-xs text-gray-400">
-              Tu catálogo público: {process.env.NEXT_PUBLIC_API_URL}/api/catalog/{business?.slug}
+
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium text-slate-700">Slug (URL pública del catálogo)</Label>
+            <Input
+              value={business?.slug ?? ''}
+              readOnly
+              className="bg-slate-50 border-slate-200 font-mono text-sm text-slate-500 cursor-default"
+            />
+            <p className="text-xs text-slate-400">
+              Tu catálogo público:{' '}
+              <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-600">
+                {process.env.NEXT_PUBLIC_API_URL}/api/catalog/{business?.slug}
+              </code>
             </p>
           </div>
-          <Button
-            onClick={handleSave}
-            disabled={saving || !name.trim() || name === business?.name}
-            className="bg-violet-600 hover:bg-violet-700"
-          >
-            {saving ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Guardando...</> : saved ? '¡Guardado!' : 'Guardar cambios'}
-          </Button>
-        </CardContent>
-      </Card>
+
+          {/* Save button — only visible when changes are detected */}
+          {hasChanges && (
+            <div className="flex items-center gap-3 pt-1">
+              <Button
+                onClick={handleSave}
+                disabled={saving}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white h-9 text-sm"
+              >
+                {saving ? (
+                  <><Loader2 className="h-4 w-4 animate-spin mr-2" />Guardando...</>
+                ) : saved ? (
+                  <><CheckCircle2 className="h-4 w-4 mr-2 text-emerald-300" />Guardado</>
+                ) : (
+                  'Guardar cambios'
+                )}
+              </Button>
+              {saved && (
+                <span className="text-xs text-emerald-600 font-medium">Los cambios se guardaron correctamente</span>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

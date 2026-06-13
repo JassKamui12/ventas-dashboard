@@ -7,13 +7,18 @@ import { Business } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ShoppingBag, Loader2 } from 'lucide-react'
+import { Loader2, Zap, MessageCircle, MessagesSquare, Smartphone } from 'lucide-react'
 
 interface RegisterResponse {
   token: string
   business: Business
 }
+
+const FEATURES = [
+  { icon: MessageCircle, label: 'WhatsApp Business automático', color: 'text-emerald-400' },
+  { icon: MessagesSquare, label: 'Facebook Messenger integrado', color: 'text-blue-400' },
+  { icon: Smartphone, label: 'Instagram DM con IA', color: 'text-pink-400' },
+] as const
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -51,83 +56,136 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 to-indigo-100 p-4">
-      <div className="w-full max-w-md space-y-6">
-        <div className="flex flex-col items-center gap-2">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-600 text-white shadow-lg">
-            <ShoppingBag className="h-6 w-6" />
+    <div className="min-h-screen flex">
+      {/* LEFT panel — dark branding (hidden on mobile) */}
+      <div className="hidden lg:flex lg:w-1/2 bg-slate-950 flex-col justify-between p-12">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-500/20 ring-1 ring-indigo-500/30">
+            <Zap className="h-5 w-5 text-indigo-400" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">VentasIA</h1>
-          <p className="text-sm text-gray-500">Crea tu cuenta de negocio gratis</p>
+          <span className="text-lg font-semibold text-white">VentasIA</span>
         </div>
 
-        <Card className="shadow-xl border-0">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl">Crear cuenta</CardTitle>
-            <CardDescription>Empieza a automatizar tus ventas en minutos</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label>Nombre del negocio *</Label>
-                <Input
-                  value={form.name}
-                  onChange={e => setField('name', e.target.value)}
-                  placeholder="Mi Tienda Online"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Slug (URL del catálogo) *</Label>
-                <Input
-                  value={form.slug}
-                  onChange={e => setField('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                  placeholder="mi-tienda"
-                  required
-                />
-                <p className="text-xs text-gray-400">Solo letras, números y guiones</p>
-              </div>
-              <div className="space-y-2">
-                <Label>Email *</Label>
-                <Input
-                  type="email"
-                  value={form.email}
-                  onChange={e => setField('email', e.target.value)}
-                  placeholder="negocio@ejemplo.com"
-                  required
-                  autoComplete="email"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Contraseña *</Label>
-                <Input
-                  type="password"
-                  value={form.password}
-                  onChange={e => setField('password', e.target.value)}
-                  placeholder="Mínimo 8 caracteres"
-                  required
-                  minLength={8}
-                  autoComplete="new-password"
-                />
-              </div>
+        <div className="space-y-8">
+          <div>
+            <h2 className="text-3xl font-bold text-white leading-tight">
+              Empieza gratis.<br />Vende más desde el día uno.
+            </h2>
+            <p className="mt-3 text-slate-400 text-base leading-relaxed">
+              Crea tu cuenta en segundos y conecta tus canales de venta para empezar a automatizar.
+            </p>
+          </div>
 
-              {error && (
-                <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2">{error}</p>
-              )}
+          <ul className="space-y-4">
+            {FEATURES.map(({ icon: Icon, label, color }) => (
+              <li key={label} className="flex items-center gap-3">
+                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-white/5">
+                  <Icon className={`h-4 w-4 ${color}`} />
+                </div>
+                <span className="text-sm text-slate-300">{label}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-              <Button type="submit" className="w-full bg-violet-600 hover:bg-violet-700" disabled={loading}>
-                {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creando cuenta...</> : 'Crear cuenta gratis'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        <p className="text-center text-xs text-gray-400">
-          ¿Ya tienes cuenta?{' '}
-          <a href="/login" className="text-violet-600 hover:underline font-medium">
-            Iniciar sesión
-          </a>
+        <p className="text-xs text-slate-600">
+          &copy; {new Date().getFullYear()} VentasIA. Todos los derechos reservados.
         </p>
+      </div>
+
+      {/* RIGHT panel — form */}
+      <div className="flex flex-1 flex-col items-center justify-center bg-white px-6 py-12">
+        {/* Mobile logo */}
+        <div className="mb-8 flex flex-col items-center gap-2 lg:hidden">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600">
+            <Zap className="h-5 w-5 text-white" />
+          </div>
+          <span className="text-xl font-bold text-slate-900">VentasIA</span>
+        </div>
+
+        <div className="w-full max-w-sm">
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-slate-900">Crear cuenta</h1>
+            <p className="mt-1 text-sm text-slate-500">Automatiza tus ventas en minutos</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium text-slate-700">Nombre del negocio *</Label>
+              <Input
+                value={form.name}
+                onChange={e => setField('name', e.target.value)}
+                placeholder="Mi Tienda Online"
+                required
+                className="h-10 border-slate-200 focus-visible:ring-indigo-500"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium text-slate-700">Slug (URL del catálogo) *</Label>
+              <Input
+                value={form.slug}
+                onChange={e => setField('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                placeholder="mi-tienda"
+                required
+                className="h-10 border-slate-200 focus-visible:ring-indigo-500"
+              />
+              <p className="text-xs text-slate-400">Solo letras, números y guiones</p>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium text-slate-700">Email *</Label>
+              <Input
+                type="email"
+                value={form.email}
+                onChange={e => setField('email', e.target.value)}
+                placeholder="negocio@ejemplo.com"
+                required
+                autoComplete="email"
+                className="h-10 border-slate-200 focus-visible:ring-indigo-500"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium text-slate-700">Contraseña *</Label>
+              <Input
+                type="password"
+                value={form.password}
+                onChange={e => setField('password', e.target.value)}
+                placeholder="Mínimo 8 caracteres"
+                required
+                minLength={8}
+                autoComplete="new-password"
+                className="h-10 border-slate-200 focus-visible:ring-indigo-500"
+              />
+            </div>
+
+            {error && (
+              <p className="text-sm text-rose-600 bg-rose-50 border border-rose-100 rounded-md px-3 py-2">
+                {error}
+              </p>
+            )}
+
+            <Button
+              type="submit"
+              className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white font-medium"
+              disabled={loading}
+            >
+              {loading ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creando cuenta...</>
+              ) : (
+                'Crear cuenta gratis'
+              )}
+            </Button>
+          </form>
+
+          <p className="mt-6 text-center text-sm text-slate-500">
+            ¿Ya tienes cuenta?{' '}
+            <a href="/login" className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors">
+              Iniciar sesión
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   )
