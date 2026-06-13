@@ -54,8 +54,9 @@ export default function DashboardPage() {
     Promise.all([
       api<Business>('/api/me'),
       api<Product[]>('/api/products'),
-      api<Order[]>('/api/orders'),
-    ]).then(([biz, products, orders]) => {
+      api<{ orders: Order[] } | Order[]>('/api/orders'),
+    ]).then(([biz, products, ordersRaw]) => {
+      const orders = Array.isArray(ordersRaw) ? ordersRaw : (ordersRaw as { orders: Order[] }).orders ?? []
       setBusiness(biz)
       setStats(computeStats(products, orders))
       setRecentOrders(orders.slice(0, 5))

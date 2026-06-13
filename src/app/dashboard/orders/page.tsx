@@ -37,8 +37,8 @@ export default function OrdersPage() {
   const [expanded, setExpanded] = useState<string | null>(null)
 
   useEffect(() => {
-    api<Order[]>('/api/orders')
-      .then(setOrders)
+    api<{ orders: Order[] } | Order[]>('/api/orders')
+      .then(data => setOrders(Array.isArray(data) ? data : (data as { orders: Order[] }).orders ?? []))
       .finally(() => setLoading(false))
   }, [])
 
